@@ -1,0 +1,22 @@
+Rust is a multi-paradigm, general-purpose programming language developed by Mozilla Research. Initially created as a personal project by Graydon Hoare in 2006, Rust gained substantial development support from Mozilla in 2009. The language emphasizes safety, concurrency, and practical use, aiming to prevent memory errors and issues like null pointer dereferencing.
+
+### Key Features of Rust:
+1. **Safety and Performance**: Rust is designed for safe programming with a focus on concurrent and memory management control, seeking performance levels comparable to C++.
+2. **Memory Management**: It enforces compile-time checks to prevent dangling pointers and accesses to uninitialized memory.
+3. **Type System**: Rust's type system is influenced by Haskell, supporting type classes. It allows type inference but requires type annotations in function arguments and return types.
+4. **Concurrency Model**: It utilizes an actor-based model for concurrency, where tasks exchange data through message passing, avoiding direct data sharing.
+5. **Object System**: Rust supports structures (structs) and enumerations (enums), with traits used to achieve polymorphism in a different manner from languages like C++.
+
+Rust has its own build system called Cargo, which facilitates package management and project building.
+
+### Usage and Applications:
+Rust is employed in various services and projects including:
+- Mozilla Firefox
+- Dropbox's file storage system (Magic Pocket)
+- The Servo web browser engine
+- Deno, a secure JavaScript and TypeScript runtime
+
+### Development and Community:
+Rust is fully open-source, with community-driven contributions and a foundation supporting its ecosystem. The Rust Foundation helps manage development and promotes the language.
+
+For more information, you can visit the [official Rust website](https://www.rust-lang.org/).

@@ -81,7 +81,6 @@ class WikipediaSearchTool(BaseTool):
 
     def _run(self, query: str, **kwargs: Any):
         wiki = search_wikipedia(query)
-        save_file(wiki, "wiki")
         return wiki
 
 
@@ -152,7 +151,7 @@ def show_message(message, role, save=True, download=True):
 # 다운로드 버튼 생성 함수
 def make_download_button(text, file_path):
     try:
-        research_date = datetime.now().strftime("%Y%m%d")
+        research_date = datetime.now().strftime("%Y%m%d-%H%M%S")
         os.makedirs("./outputs", exist_ok=True)
         file_name = f"./outputs/{file_path}_{research_date}.txt"
 
@@ -192,8 +191,10 @@ def paint_history():
 def save_api_key():
     if re.match(API_KEY_PATTERN, st.session_state["api_key"]):
         st.session_state["api_key_check"] = True
+        st.success("API_KEY가 저장되었습니다.")
     else:
         st.error(INVALID_API_KEY)
+        st.session_state["api_key_check"] = False
 
 
 functions_map = {
@@ -402,5 +403,4 @@ with st.sidebar:
 
 if not st.session_state["api_key_check"]:
     st.warning(API_KEY_ERROR)
-else:
-    st.session_state["messages"] = []
+    st.stop()
