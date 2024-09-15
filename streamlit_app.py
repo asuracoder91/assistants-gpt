@@ -28,7 +28,7 @@ st.write("왼쪽 설정 창에 OpenAPI API키를 입력해주세요")
 # 세션 상태 초기화
 session_defaults = {
     "messages": [],
-    "api_key": None,
+    "api_key": "",
     "api_key_check": False,
 }
 
@@ -52,11 +52,6 @@ def duckduckgo_search_tool(inputs):
     query = inputs["query"]
     result = ddg.run(query)
     return json.dumps({"result": result})
-
-
-def save_file(docs, title):
-    f = open(f"./{title}.txt", "w", encoding="utf-8")
-    f.write(docs)
 
 
 def search_wikipedia(keyword):
@@ -108,31 +103,12 @@ class DuckDuckGoSearchTool(BaseTool):
     def _run(self, query: str, **kwargs: Any):
         ddg = DuckDuckGoSearchAPIWrapper()
         result = ddg.results(query, max_results=3)
-        print(result)
         if result and len(result) > 0:
             first_link = result[0]["link"]
             scraped_content = self._scrape_website(first_link)
-            save_file(scraped_content, "ddg_scraped_content")
             return scraped_content
         else:
             return "No results found or no website link found in DuckDuckGo search."
-
-
-# 콜백 핸들러 클래스 정의
-class ChatCallbackHandler(BaseCallbackHandler):
-    def __init__(self):
-        self.message = ""
-        self.message_box = None
-
-    def on_llm_start(self, *args, **kwargs):
-        self.message_box = st.empty()
-
-    def on_llm_end(self, *args, **kwargs):
-        save_message(self.message, "ai")
-
-    def on_llm_new_token(self, token, *args, **kwargs):
-        self.message += token
-        self.message_box.markdown(self.message)
 
 
 # 메시지 저장 함수
@@ -306,11 +282,6 @@ else:
             thread_id=thread_id,
         )
 
-    def send_message(thread_id, content):
-        return client.beta.threads.messages.create(
-            thread_id=thread_id, role="user", content=content
-        )
-
     def get_messages(thread_id):
         messages = client.beta.threads.messages.list(thread_id=thread_id)
         messages = list(messages)
@@ -357,9 +328,7 @@ else:
         )
         paint_history()
 
-        if message := st.chat_input(
-            "What do you want reaearch about?", key="message_input"
-        ):
+        if message := st.chat_input("어떤 내용을 조사할까요?", key="message_input"):
             st.session_state["message"] = message
 
             show_message(message, "user")
@@ -370,13 +339,13 @@ else:
             is_new_result = False
 
             with st.chat_message("assistant"):
-                with st.status(":blue[Polling Run Status...]") as status:
+                with st.status("실행중") as status:
 
                     while True:
                         run = get_run(run.id, thread.id)
                         if run.status == "requires_action":
                             status.update(
-                                label=f"Running: {run.status}", state="running"
+                                label=f"실행중: {run.status}", state="running"
                             )
                             submit_tool_outputs(run.id, thread.id)
 
@@ -399,7 +368,7 @@ else:
                 if result:
                     show_message(result, "assistant")
                 else:
-                    show_message("No result found", "assistant")
+                    show_message("결과가 없습니다", "assistant")
                 st.rerun()
 
     except Exception as e:
