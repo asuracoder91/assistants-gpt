@@ -11,10 +11,18 @@ import requests
 from bs4 import BeautifulSoup
 from openai import OpenAI
 import json
-import wikipedia
 
-original_bs = wikipedia.BeautifulSoup
-wikipedia.BeautifulSoup = lambda html: BeautifulSoup(html, features="lxml")
+
+# bs4의 BeautifulSoup 클래스를 오버라이드하여 기본 파서를 지정합니다.
+class CustomBeautifulSoup(BeautifulSoup):
+    def __init__(self, *args, **kwargs):
+        if "features" not in kwargs:
+            kwargs["features"] = "lxml"
+        super().__init__(*args, **kwargs)
+
+
+# bs4의 BeautifulSoup를 CustomBeautifulSoup로 대체합니다.
+BeautifulSoup = CustomBeautifulSoup
 
 st.set_page_config(
     page_title="Assistants-GPT",
@@ -124,7 +132,7 @@ def show_message(message, role, save=True, download=True):
 
 
 # 다운로드 버튼 생성 함수
-def make_download_button(text, file_path):
+def make_download_button(text, file_path, key):
     try:
         research_date = datetime.now().strftime("%Y%m%d-%H%M%S")
         os.makedirs("./outputs", exist_ok=True)
@@ -138,7 +146,7 @@ def make_download_button(text, file_path):
             data=text,
             file_name=f"{file_path}_{research_date}.txt",
             mime="text/plain",
-            key=f"{file_path}_{research_date}",
+            key=key,
         )
     except Exception as e:
         st.error(f"An error occurred while creating the download button: {e}")
@@ -159,6 +167,7 @@ def paint_history():
             make_download_button(
                 text=message["message"],
                 file_path="result",
+                key=f"download_button_{index}",
             )
 
 
@@ -243,7 +252,6 @@ else:
     api_key = st.session_state["api_key"]
     client = OpenAI(api_key=api_key)
 
-    @st.cache_data
     def create_assistant():
         return client.beta.assistants.create(
             name="Research Assistant",
@@ -257,7 +265,6 @@ else:
             tools=functions,
         )
 
-    @st.cache_data
     def create_thread(content):
         return client.beta.threads.create(
             messages=[
@@ -268,7 +275,6 @@ else:
             ]
         )
 
-    @st.cache_data
     def create_run(thread_id, assistant_id):
         return client.beta.threads.runs.create(
             thread_id=thread_id,
@@ -315,7 +321,9 @@ else:
         )
 
     try:
-        assistant = create_assistant()
+        if "assistant" not in st.session_state:
+            st.session_state["assistant"] = create_assistant()
+        assistant = st.session_state["assistant"]
         if "message" not in st.session_state:
             st.session_state["message"] = ""
 
