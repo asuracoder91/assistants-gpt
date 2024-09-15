@@ -240,8 +240,33 @@ functions = [
 ]
 
 
-if st.session_state["api_key_check"]:
-    client = OpenAI(api_key=st.session_state["api_key"])
+with st.sidebar:
+    st.text_input(
+        "API_KEY 입력",
+        placeholder="OpenAPI API_KEY",
+        on_change=save_api_key,
+        key="api_key",
+        type="password",
+    )
+
+    if st.session_state["api_key_check"]:
+        st.success("API_KEY가 저장되었습니다.")
+    else:
+        st.warning(API_KEY_ERROR)
+
+    st.divider()
+    st.link_button(
+        "Github Repo 바로가기", "https://github.com/asuracoder91/assistants-gpt"
+    )
+
+
+if not st.session_state["api_key_check"]:
+    st.warning(API_KEY_ERROR)
+    st.stop()
+
+else:
+    api_key = st.session_state["api_key"]
+    client = OpenAI(api_key=api_key)
 
     @st.cache_data
     def create_assistant():
@@ -379,28 +404,3 @@ if st.session_state["api_key_check"]:
 
     except Exception as e:
         st.error(e)
-
-
-with st.sidebar:
-    st.text_input(
-        "API_KEY 입력",
-        placeholder="OpenAPI API_KEY",
-        on_change=save_api_key,
-        key="api_key",
-        type="password",
-    )
-
-    if st.session_state["api_key_check"]:
-        st.success("API_KEY가 저장되었습니다.")
-    else:
-        st.warning(API_KEY_ERROR)
-
-    st.divider()
-    st.link_button(
-        "Github Repo 바로가기", "https://github.com/asuracoder91/assistants-gpt"
-    )
-
-
-if not st.session_state["api_key_check"]:
-    st.warning(API_KEY_ERROR)
-    st.stop()
