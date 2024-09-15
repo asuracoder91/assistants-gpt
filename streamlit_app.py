@@ -5,7 +5,6 @@ import re
 from typing import Any, Type
 from langchain_community.retrievers import WikipediaRetriever
 from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
-from langchain_core.callbacks import BaseCallbackHandler
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain_core.tools import BaseTool
 import requests
@@ -23,7 +22,7 @@ st.set_page_config(
 )
 
 st.title("🐼 Assistants-GPT")
-st.write("왼쪽 설정 창에 OpenAPI API키를 입력해주세요")
+st.write("왼쪽창에 OpenAPI API키를 입력해주세요")
 
 # 세션 상태 초기화
 session_defaults = {
