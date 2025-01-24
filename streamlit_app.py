@@ -25,11 +25,11 @@ class CustomBeautifulSoup(BeautifulSoup):
 BeautifulSoup = CustomBeautifulSoup
 
 st.set_page_config(
-    page_title="Assistants-GPT",
+    page_title="Final Assistants-GPT",
     page_icon="🐼",
 )
 
-st.title("🐼 Assistants-GPT")
+st.title("Final Assistants-GPT")
 st.write("왼쪽창에 OpenAPI API키를 입력해주세요")
 
 # 세션 상태 초기화
@@ -62,12 +62,17 @@ def duckduckgo_search_tool(inputs):
 
 
 def search_wikipedia(keyword):
-    result = "Wikipedia Result\n\n"
-    retriver = WikipediaRetriever(top_k_results=3, lang="ko")
-    data_list = retriver.invoke(keyword)
-    for page_content in data_list:
-        result += f"{page_content.page_content} \n\n"
-    return result
+    try:
+        result = "Wikipedia Result\n\n"
+        retriver = WikipediaRetriever(top_k_results=3, lang="ko")
+        data_list = retriver.invoke(keyword)
+        if not data_list:
+            return "검색 결과가 없습니다."
+        for page_content in data_list:
+            result += f"{page_content.page_content} \n\n"
+        return result
+    except Exception as e:
+        return f"검색 중 오류가 발생했습니다: {str(e)}"
 
 
 class WikipediaToolArgsSchema(BaseModel):
@@ -126,7 +131,11 @@ def save_message(message, role):
 # 메시지 전송 함수
 def show_message(message, role, save=True, download=True):
     with st.chat_message(role):
-        st.markdown(message)
+        if role == "assistant":
+            with st.spinner("응답 생성 중..."):  # 로딩 표시 추가
+                st.markdown(message)
+        else:
+            st.markdown(message)
     if save:
         save_message(message, role)
 
@@ -175,7 +184,7 @@ def paint_history():
 def save_api_key():
     if re.match(API_KEY_PATTERN, st.session_state["api_key"]):
         st.session_state["api_key_check"] = True
-        st.success("API_KEY가 저장되었습니다.")
+        st.success("✅ API_KEY가 저장되었습니다.")
     else:
         st.error(INVALID_API_KEY)
         st.session_state["api_key_check"] = False
@@ -227,21 +236,25 @@ functions = [
 with st.sidebar:
     st.text_input(
         "API_KEY 입력",
-        placeholder="OpenAPI API_KEY",
+        placeholder="sk-...",  # 플레이스홀더 개선
         on_change=save_api_key,
         key="api_key",
         type="password",
     )
 
     if st.session_state["api_key_check"]:
-        st.success("API_KEY가 저장되었습니다.")
+        st.success("✅ API_KEY가 저장되었습니다.")
     else:
-        st.warning(API_KEY_ERROR)
+        st.warning("⚠️ " + API_KEY_ERROR)
 
     st.divider()
     st.link_button(
         "Github Repo 바로가기", "https://github.com/asuracoder91/assistants-gpt"
     )
+
+    if st.button("채팅 기록 초기화"):
+        st.session_state["messages"] = []
+        st.rerun()
 
 
 if not st.session_state["api_key_check"]:
